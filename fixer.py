@@ -46,12 +46,12 @@ class Fixer:
             req += 'symbols={}'.format(','.join(symbols))
         return self._request(req)
 
-    def convert(self, cur_from, cur_to, amount=1.0):
+    def convert(self, cur_from, cur_to, amount=1.0, date=None):
         if cur_from not in self.allowed_curr:
             raise ValueError("Currency {} is not supported".format(cur_from))
         if cur_to not in self.allowed_curr:
             raise ValueError("Currency {} is not supported".format(cur_to))
-        resp = self.latest(base=cur_from, symbols=[cur_to])
+        resp = self.latest(base=cur_from, symbols=[cur_to], date=date)
         if 'rates' in resp and cur_to in resp['rates']:
             return float(resp['rates'][cur_to]) * amount
         return None
@@ -70,6 +70,7 @@ class Fixer:
 def main():
     f = Fixer()
     print(f.convert('EUR', 'RUB', 1000))
+    print(f.convert('EUR', 'RUB', 1000, '2014-01-03'))
     print(f.latest())
     print(f.latest(base='EUR', symbols=['EUR', 'RUB'],  date='2014-01-03'))
 
