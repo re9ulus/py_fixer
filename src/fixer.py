@@ -14,7 +14,7 @@ class Fixer:
 
     date_format = '%Y-%m-%d'
     min_date = datetime.strptime('1999-10-01', date_format)
-    allowed_curr = ['EUR', 'SEK', 'HRK', 'CHF', 'AUD', 'CAD', 'IDR', 'BRL', 'ILS',
+    _allowed_curr = ['EUR', 'SEK', 'HRK', 'CHF', 'AUD', 'CAD', 'IDR', 'BRL', 'ILS',
         'HKD', 'JPY', 'GBP', 'PHP', 'MYR', 'NZD', 'CNY', 'KRW', 'THB', 'USD', 'CZK',
         'NOK', 'ZAR', 'TRY', 'DKK', 'BGN', 'MXN', 'HUF', 'PLN', 'RUB', 'RON', 'INR',
         'SGD']
@@ -35,26 +35,30 @@ class Fixer:
                 raise ValueError('Too old/new date. Min date: {0} Max date(today): {1}'.format(self.min_date, datetime.today()))
         req = date if date else 'latest'
         if base:
-            if base not in self.allowed_curr:
+            if base not in self._allowed_curr:
                 raise ValueError("Currency {} is not supported".format(base))
             req += '?base={}'.format(base)
         if symbols:
             for symb in symbols:
-                if symb not in self.allowed_curr:
+                if symb not in self._allowed_curr:
                     raise ValueError("Currency {} is not supported".format(base))
             req += '&' if base else '?'
             req += 'symbols={}'.format(','.join(symbols))
         return self._request(req)
 
     def convert(self, cur_from, cur_to, amount=1.0, date=None):
-        if cur_from not in self.allowed_curr:
+        if cur_from not in self._allowed_curr:
             raise ValueError("Currency {} is not supported".format(cur_from))
-        if cur_to not in self.allowed_curr:
+        if cur_to not in self._allowed_curr:
             raise ValueError("Currency {} is not supported".format(cur_to))
         resp = self.latest(base=cur_from, symbols=[cur_to], date=date)
         if 'rates' in resp and cur_to in resp['rates']:
             return float(resp['rates'][cur_to]) * amount
         return None
+
+    @classmethod
+    def get_allowed_curr(cls):
+        return cls._allowed_curr
 
     def _request(self, req):
         resp = None
